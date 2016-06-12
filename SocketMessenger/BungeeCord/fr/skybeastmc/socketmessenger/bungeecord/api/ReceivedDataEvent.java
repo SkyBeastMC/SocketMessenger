@@ -1,6 +1,7 @@
 package fr.skybeastmc.socketmessenger.bungeecord.api;
 
-import fr.skybeastmc.socketmessenger.Data;
+import java.io.ByteArrayInputStream;
+
 import net.md_5.bungee.api.plugin.Event;
 
 /**
@@ -8,22 +9,22 @@ import net.md_5.bungee.api.plugin.Event;
  */
 public class ReceivedDataEvent extends Event{
 
-    private final Data data;
+    private final ByteArrayInputStream data;
     private final String sender;
     private final String channel;
 
-    public ReceivedDataEvent(Data data, String sender, String channel) {
+    public ReceivedDataEvent(ByteArrayInputStream data, String sender, String channel) {
         this.data = data;
         this.sender = sender;
         this.channel = channel;
     }
-
+	
     /**
      * Gets the Data received.
      *
      * @return The Data received.
      */
-    public Data getData() {
+    public ByteArrayInputStream getData() {
         return data;
     }
 

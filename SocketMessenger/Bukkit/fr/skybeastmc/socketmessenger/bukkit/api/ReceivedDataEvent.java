@@ -1,9 +1,9 @@
 package fr.skybeastmc.socketmessenger.bukkit.api;
 
+import java.io.ByteArrayInputStream;
+
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-
-import fr.skybeastmc.socketmessenger.Data;
 
 /**
  * Called when Data is received on a specific channel trough the socket.
@@ -12,10 +12,10 @@ public class ReceivedDataEvent extends Event{
 
     private static final HandlerList handlers = new HandlerList();
 
-    private final Data data;
+    private final ByteArrayInputStream data;
     private final String channel;
 
-    public ReceivedDataEvent(Data data, String channel) {
+    public ReceivedDataEvent(ByteArrayInputStream data, String channel) {
         this.data = data;
         this.channel = channel;
     }
@@ -25,7 +25,7 @@ public class ReceivedDataEvent extends Event{
      *
      * @return The Data received.
      */
-    public Data getData() {
+    public ByteArrayInputStream getData() {
         return data;
     }
 

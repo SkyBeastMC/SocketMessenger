@@ -8,7 +8,7 @@ import net.md_5.bungee.config.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 
-public class SocketMessenger extends Plugin {
+public class Main extends Plugin {
 
     @Override
     public void onEnable() {
@@ -41,6 +41,6 @@ public class SocketMessenger extends Plugin {
 
     @Override
     public void onDisable() {
-        SocketManager.end();
+        SocketManager.end(true);
     }
 }

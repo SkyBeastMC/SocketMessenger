@@ -1,34 +1,26 @@
 package fr.skybeastmc.socketmessenger.bukkit;
 
+public enum Command {
+	EXIT((byte) 0), IDENTIFY((byte) 127), RECONNECT((byte) 128), BROADCAST(
+			(byte) 1), SEND_DATA((byte) 2), FORWARD_DATA((byte) 3), CONNECT(
+			(byte) 4), PLAYER_COUNT((byte) 5), PLAYER_LIST((byte) 6), GET_SERVERS(
+			(byte) 7), MESSAGE((byte) 8), GET_SERVER((byte) 9), KICK_PLAYER(
+			(byte) 10);
 
-public enum Command{
-    EXIT(0),
-    IDENTIFY(127),
-    BROADCAST(1),
-    SEND_DATA(2),
-    FORWARD_DATA(3),
-    CONNECT(4),
-    PLAYER_COUNT(5),
-    PLAYER_LIST(6),
-    GET_SERVERS(7),
-    MESSAGE(8),
-    GET_SERVER(9),
-    KICK_PLAYER(10);
-    
-    private byte id;
-    
-    Command(int id){
-        this.id = (byte)id;
-    }
-    
-    public static Command get(byte command){
-    	for(Command c : Command.values())
-    		if(c.getByte() == command)
-    			return c;
+	private byte id;
+
+	Command(byte id) {
+		this.id = (byte) id;
+	}
+
+	public static Command get(byte command) {
+		for (Command c : Command.values())
+			if (c.getByte() == command)
+				return c;
 		return null;
-    }
-    
-    public byte getByte(){
-        return id;
-    }
+	}
+
+	public byte getByte() {
+		return id;
+	}
 }

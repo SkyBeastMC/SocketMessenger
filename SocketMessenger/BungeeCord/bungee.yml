@@ -1,0 +1,4 @@
+name: SocketMessenger
+author: SkyBeast55
+version: 0.1
+main: fr.skybeastmc.socketmessenger.bungeecord.SocketMessenger

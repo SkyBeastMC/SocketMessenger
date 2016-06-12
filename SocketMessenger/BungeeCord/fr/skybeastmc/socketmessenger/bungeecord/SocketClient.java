@@ -38,25 +38,25 @@ public class SocketClient {
 	private void dataReceiveListener() {
 		while (!socket.isClosed()) {
 			try {
-				Util.log("1");
+				Debug.info("1");
 				// if(in.available() <= 0) continue;
-				Util.log("2");
+				Debug.info("2");
 				byte cmd;
 				try {
 					cmd = in.readByte();
 				} catch (EOFException | SocketException e) {
-					Util.log(fullName() + " disconnected. "
+					Debug.info(fullName() + " disconnected. "
 							+ e.getClass().getName() + ": " + e.getMessage());
 					close();
 					return;
 				}
-				Util.log("> " + cmd);
+				Debug.info("> " + cmd);
 				Command command = Command.get(cmd);
-				Util.log("3");
+				Debug.info("3");
 
 				switch (command) {
 				case EXIT:
-					Util.log(fullName() + " sent end command!");
+					Debug.info(fullName() + " sent end command!");
 					close();
 					break;
 				case IDENTIFY:
@@ -71,9 +71,9 @@ public class SocketClient {
 					if (name.equals("")) {
 						name = "Undefined";
 					}
-					Util.log("Socket " + id + "'s origin is '" + name + "'!");
+					Debug.info("Socket " + id + "'s origin is '" + name + "'!");
 					if (SocketManager.getConnectedSockets().containsKey(name)) {
-						Util.log("An open socket from " + name
+						Debug.info("An open socket from " + name
 								+ " already exists! Disconnecting "
 								+ fullName() + "!");
 						end(false);
@@ -86,7 +86,7 @@ public class SocketClient {
 					if (!identified)
 						return;
 					String message = in.readUTF();
-					Util.log("Incoming broadcast from " + fullName() + "! '"
+					Debug.info("Incoming broadcast from " + fullName() + "! '"
 							+ message + "'!");
 					BungeeCord.getInstance().broadcast(message);
 					break;
@@ -96,7 +96,7 @@ public class SocketClient {
 					String channel = in.readUTF();
 					byte[] array = new byte[in.available()];
 					in.read(array);
-					Util.log("Received data from " + fullName()
+					Debug.info("Received data from " + fullName()
 							+ "! Channel: '" + channel + "'!");
 					BungeeCord
 							.getInstance()
@@ -179,7 +179,7 @@ public class SocketClient {
 				sendCommand(Command.EXIT);
 			}
 			close();
-			Util.log(fullName() + " disconnected!");
+			Debug.info(fullName() + " disconnected!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -189,7 +189,7 @@ public class SocketClient {
 		if (!socket.isClosed())
 			socket.close();
 		SocketManager.getConnectedSockets().remove(name);
-		Util.log(fullName() + " closed!");
+		Debug.info(fullName() + " closed!");
 	}
 
 	public void sendCommand(Command command, Object... data) {

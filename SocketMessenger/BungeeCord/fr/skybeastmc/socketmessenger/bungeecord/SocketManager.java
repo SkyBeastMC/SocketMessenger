@@ -18,7 +18,7 @@ public class SocketManager {
 
 	static void init(int port) {
 		try {
-			Util.log("Listening for socket connections on port " + port + "!");
+			Debug.info("Listening for socket connections on port " + port + "!");
 			serverSocket = new ServerSocket(port);
 			@SuppressWarnings("deprecation")
 			ExecutorService service = BungeeCord.getInstance()
@@ -60,7 +60,7 @@ public class SocketManager {
 
 	private static void initSocket(Socket socket) {
 		id++;
-		Util.log("Socket connected! ID: " + id);
+		Debug.info("Socket connected! ID: " + id);
 		new SocketClient(socket);
 	}
 	

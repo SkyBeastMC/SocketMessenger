@@ -1,17 +1,19 @@
 package fr.skybeastmc.socketmessenger.bungeecord;
 
+import java.io.File;
+import java.io.IOException;
+
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
-import java.io.File;
-import java.io.IOException;
-
 public class Main extends Plugin {
-
-    @Override
+	private static Plugin plugin;
+	
     public void onEnable() {
+    	plugin = this;
+    	
         int port = -1;
         try {
             if(!getDataFolder().exists()) {
@@ -39,8 +41,11 @@ public class Main extends Plugin {
         SocketManager.init(port);
     }
 
-    @Override
     public void onDisable() {
         SocketManager.end(true);
     }
+
+	public static Plugin getPlugin() {
+		return plugin;
+	}
 }

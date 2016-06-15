@@ -1,9 +1,8 @@
 package fr.skybeastmc.socketmessenger.bukkit;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Socket;
@@ -11,6 +10,10 @@ import java.net.SocketException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 
 import fr.skybeastmc.socketmessenger.bukkit.api.ReceivedDataEvent;
 
@@ -87,9 +90,11 @@ public class SocketManager {
 		}
 		valid = true;
 		sendCommand(Command.IDENTIFY);
-		while (!socket.isClosed()) {
+		while (!socket.isClosed() && valid) {
 			try {
 				Command command = Command.get(in.readByte());
+
+				Debug.info("Server: " + command.name());
 
 				switch (command) {
 				case EXIT:
@@ -102,15 +107,19 @@ public class SocketManager {
 							+ channel + "'!");
 					byte[] array = new byte[in.available()];
 					in.readFully(array);
-					ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(
-							array);
+					ByteArrayDataInput byteArrayIn = ByteStreams
+							.newDataInput(array);
 
 					Bukkit.getPluginManager().callEvent(
 							new ReceivedDataEvent(byteArrayIn, channel));
 					break;
 				case RECONNECT:
-					Debug.info("Server sent reconnect command!");
-					end(false, true);
+					Debug.info("Server sent reconnect command! Reconnecting in 5 second!");
+					new BukkitRunnable() {
+						public void run() {
+							end(false, true);
+						}
+					}.runTaskLater(Main.getPlugin(), 20 * 5);
 					break;
 				case BROADCAST:
 					break;
@@ -135,7 +144,16 @@ public class SocketManager {
 				default:
 					break;
 				}
-			} catch (SocketException e) {
+			} catch (SocketException | EOFException e) {
+				if (socket.isClosed())
+					return;
+				Debug.info("Disconnected from the server. Reconnecting in 5 seconds. "
+						+ e.getClass().getName() + ": " + e.getMessage());
+				new BukkitRunnable() {
+					public void run() {
+						init(address, port);
+					}
+				}.runTaskLater(Main.getPlugin(), 5 * 20);
 				return;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -181,13 +199,13 @@ public class SocketManager {
 					throw new RuntimeException(
 							"1st object for SEND_DATA is not of type String!");
 				byte[] array;
-				if (data[1] instanceof ByteArrayOutputStream) {
-					array = ((ByteArrayOutputStream) data[1]).toByteArray();
+				if (data[1] instanceof ByteArrayDataOutput) {
+					array = ((ByteArrayDataOutput) data[1]).toByteArray();
 				} else if (data[1] instanceof byte[]) {
 					array = (byte[]) data[1];
 				} else {
 					throw new RuntimeException(
-							"2st object for SEND_DATA is neither type of ByteArrayOutputStream nor byte array!");
+							"2st object for SEND_DATA is neither type of ByteArrayDataOutput nor byte array!");
 				}
 
 				String channel = ((String) data[0]);
@@ -204,13 +222,13 @@ public class SocketManager {
 					throw new RuntimeException(
 							"1st object for FORWARD_DATA is not of type String!");
 				byte[] a;
-				if (data[2] instanceof ByteArrayOutputStream) {
-					a = ((ByteArrayOutputStream) data[1]).toByteArray();
+				if (data[2] instanceof ByteArrayDataOutput) {
+					a = ((ByteArrayDataOutput) data[1]).toByteArray();
 				} else if (data[2] instanceof byte[]) {
 					a = (byte[]) data[2];
 				} else {
 					throw new RuntimeException(
-							"2st object for SEND_DATA is neither type of ByteArrayOutputStream nor byte array!");
+							"2st object for SEND_DATA is neither type of ByteArrayDataOutput nor byte array!");
 				}
 
 				String serv = ((String) data[0]);

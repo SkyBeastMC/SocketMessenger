@@ -1,6 +1,6 @@
 package fr.skybeastmc.socketmessenger.bukkit;
 
-import java.io.ByteArrayOutputStream;
+import com.google.common.io.ByteArrayDataOutput;
 
 /**
  * Api for sending/requesting data trough sockets.
@@ -18,7 +18,7 @@ public class SocketAPI {
 	 *            - The Data to send
 	 */
 	public static void sendDataToServer(String channel,
-			ByteArrayOutputStream data) {
+			ByteArrayDataOutput data) {
 		SocketManager.sendCommand(Command.SEND_DATA, channel, data);
 	}
 
@@ -59,7 +59,7 @@ public class SocketAPI {
 	 *            - The Data to forward
 	 */
 	public static void forwardDataToServer(String server,
-			ByteArrayOutputStream data) {
+			ByteArrayDataOutput data) {
 		SocketManager.sendCommand(Command.FORWARD_DATA, server, data);
 	}
 

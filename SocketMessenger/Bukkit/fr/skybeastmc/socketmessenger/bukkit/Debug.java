@@ -38,12 +38,13 @@ public class Debug {
 
 	public static void info(Object... o) {
 		for (Object object : o) {
-			Bukkit.getLogger().info(valueOf(object));
+			Bukkit.getLogger().info(
+					"[" + Main.getPlugin().getName() + "] " + valueOf(object));
 		}
 	}
 
 	public static void info() {
-		Bukkit.getLogger().info("");
+		Bukkit.getLogger().info("[" + Main.getPlugin().getName() + "] " + "");
 	}
 
 	private static String valueOf(Object o) {

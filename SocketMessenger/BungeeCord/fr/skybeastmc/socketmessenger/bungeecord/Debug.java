@@ -27,7 +27,8 @@ public class Debug {
 	public static void bc(Object... o) {
 		if (debug) {
 			for (Object object : o) {
-				ProxyServer.getInstance().broadcast(new TextComponent(valueOf(object)));
+				ProxyServer.getInstance().broadcast(
+						new TextComponent(valueOf(object)));
 			}
 		}
 	}
@@ -39,12 +40,17 @@ public class Debug {
 
 	public static void info(Object... o) {
 		for (Object object : o) {
-			ProxyServer.getInstance().getLogger().info(valueOf(object));
+			ProxyServer
+					.getInstance()
+					.getLogger()
+					.info("[" + Main.getPlugin().getDescription().getName() + "] "
+							+ valueOf(object));
 		}
 	}
 
 	public static void info() {
-		ProxyServer.getInstance().getLogger().info("");
+		ProxyServer.getInstance().getLogger()
+				.info("[" + Main.getPlugin().getDescription().getName() + "] " + "");
 	}
 
 	private static String valueOf(Object o) {
@@ -63,21 +69,26 @@ public class Debug {
 	public static void error(Throwable error, String phase, boolean disable) {
 		for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
 			if (player.hasPermission("bungeecord.command.end")) {
-				player.sendMessage(new TextComponent("§c[" + Main.getPlugin().getDescription().getName()
+				player.sendMessage(new TextComponent("§c["
+						+ Main.getPlugin().getDescription().getName()
 						+ "] Oops, there was an error while phase \"" + phase
 						+ "\"!"));
 				player.sendMessage(new TextComponent("§cStacktrace: "));
 				if (debug)
-					player.sendMessage(new TextComponent("§c" + stackTraceToString(error)));
+					player.sendMessage(new TextComponent("§c"
+							+ stackTraceToString(error)));
 				else
 					player.sendMessage(new TextComponent("§c[See console]"));
 				if (disable) {
-					player.sendMessage(new TextComponent("§4The plugin can't work now! Disabling..."));
+					player.sendMessage(new TextComponent(
+							"§4The plugin can't work now! Disabling..."));
 				}
 			}
 		}
-		ProxyServer.getInstance().getLogger().severe(
-				"[" + Main.getPlugin().getDescription().getName()
+		ProxyServer
+				.getInstance()
+				.getLogger()
+				.severe("[" + Main.getPlugin().getDescription().getName()
 						+ "] Oops, there was an error while phase \"" + phase
 						+ "\"!");
 		ProxyServer.getInstance().getLogger().severe("Stacktrace: ");

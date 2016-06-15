@@ -1,8 +1,11 @@
-package fr.skybeastmc.socketmessenger.bungeecord;
-
-import java.io.ByteArrayInputStream;
+package fr.skybeastmc.socketmessenger.bungeecord.api;
 
 import net.md_5.bungee.api.config.ServerInfo;
+
+import com.google.common.io.ByteArrayDataOutput;
+
+import fr.skybeastmc.socketmessenger.bungeecord.Command;
+import fr.skybeastmc.socketmessenger.bungeecord.SocketManager;
 
 /**
  * Api for sending/requesting data trough sockets.
@@ -18,7 +21,7 @@ public class SocketAPI {
      * @param channel - The channel to send the Data to
      * @param data - The Data to send
      */
-    public static void sendDataToClient(ServerInfo server, String channel, ByteArrayInputStream data){
+    public static void sendDataToClient(ServerInfo server, String channel, ByteArrayDataOutput data){
         SocketManager.getConnectedSockets().get(server.getName()).sendCommand(Command.SEND_DATA, channel, data);
     }
     

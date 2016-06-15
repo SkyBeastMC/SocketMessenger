@@ -1,7 +1,5 @@
 package fr.skybeastmc.socketmessenger.bungeecord;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -11,6 +9,10 @@ import java.net.SocketException;
 
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.chat.TextComponent;
+
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
 import fr.skybeastmc.socketmessenger.bungeecord.api.ReceivedDataEvent;
 
 public class SocketClient {
@@ -25,7 +27,7 @@ public class SocketClient {
 
 	SocketClient(Socket socket) {
 		this.socket = socket;
-		this.id = SocketManager.getID();
+		this.id = SocketManager.getLastID();
 		try {
 			this.in = new DataInputStream(socket.getInputStream());
 			this.out = new DataOutputStream(socket.getOutputStream());
@@ -38,26 +40,28 @@ public class SocketClient {
 	private void dataReceiveListener() {
 		while (!socket.isClosed()) {
 			try {
-				Debug.info("1");
-				// if(in.available() <= 0) continue;
-				Debug.info("2");
 				byte cmd;
 				try {
 					cmd = in.readByte();
-				} catch (EOFException | SocketException e) {
+				} catch (EOFException e) {
 					Debug.info(fullName() + " disconnected. "
 							+ e.getClass().getName() + ": " + e.getMessage());
 					close();
 					return;
+				} catch (SocketException e) {
+					if (!socket.isClosed()) {
+						close();
+					}
+					return;
 				}
-				Debug.info("> " + cmd);
 				Command command = Command.get(cmd);
-				Debug.info("3");
 
 				switch (command) {
 				case EXIT:
+					if (!identified)
+						continue;
 					Debug.info(fullName() + " sent end command!");
-					close();
+					end(false);
 					break;
 				case IDENTIFY:
 					this.serverPort = in.readInt();
@@ -84,6 +88,8 @@ public class SocketClient {
 					break;
 				case BROADCAST:
 					if (!identified)
+						continue;
+					if (!identified)
 						return;
 					String message = in.readUTF();
 					Debug.info("Incoming broadcast from " + fullName() + "! '"
@@ -91,6 +97,8 @@ public class SocketClient {
 					BungeeCord.getInstance().broadcast(message);
 					break;
 				case SEND_DATA:
+					if (!identified)
+						continue;
 					if (!identified)
 						return;
 					String channel = in.readUTF();
@@ -102,11 +110,12 @@ public class SocketClient {
 							.getInstance()
 							.getPluginManager()
 							.callEvent(
-									new ReceivedDataEvent(
-											new ByteArrayInputStream(array),
-											name, channel));
+									new ReceivedDataEvent(ByteStreams
+											.newDataInput(array), name, channel));
 					break;
 				case FORWARD_DATA:
+					if (!identified)
+						continue;
 					String s = in.readUTF();
 					byte[] ar = new byte[in.available()];
 					in.read(ar);
@@ -117,6 +126,8 @@ public class SocketClient {
 					client.sendCommand(Command.FORWARD_DATA, ar);
 					break;
 				case CONNECT:
+					if (!identified)
+						continue;
 					String p = in.readUTF();
 					String server = in.readUTF();
 					if (BungeeCord.getInstance().getPlayer(p) == null)
@@ -131,12 +142,20 @@ public class SocketClient {
 											server));
 					break;
 				case PLAYER_COUNT:
+					if (!identified)
+						continue;
 					break;
 				case PLAYER_LIST:
+					if (!identified)
+						continue;
 					break;
 				case GET_SERVERS:
+					if (!identified)
+						continue;
 					break;
 				case MESSAGE:
+					if (!identified)
+						continue;
 					String player = in.readUTF();
 					String msg = in.readUTF();
 					if (BungeeCord.getInstance().getPlayer(player) == null)
@@ -145,8 +164,12 @@ public class SocketClient {
 							.sendMessage(new TextComponent(msg));
 					break;
 				case GET_SERVER:
+					if (!identified)
+						continue;
 					break;
 				case KICK_PLAYER:
+					if (!identified)
+						continue;
 					String pl = in.readUTF();
 					String m = in.readUTF();
 					if (BungeeCord.getInstance().getPlayer(pl) == null)
@@ -155,20 +178,18 @@ public class SocketClient {
 							.disconnect(new TextComponent(m));
 					break;
 				case RECONNECT:
+					if (!identified)
+						continue;
 					break;
 				default:
+					if (!identified)
+						continue;
 					break;
 				}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-			}
-		if (!socket.isConnected())
-			try {
-				close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
 	}
 
 	public void end(boolean reconnect) {
@@ -180,6 +201,7 @@ public class SocketClient {
 			}
 			close();
 			Debug.info(fullName() + " disconnected!");
+			SocketManager.getConnectedSockets().remove(name);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -188,8 +210,7 @@ public class SocketClient {
 	public void close() throws IOException {
 		if (!socket.isClosed())
 			socket.close();
-		SocketManager.getConnectedSockets().remove(name);
-		Debug.info(fullName() + " closed!");
+		SocketManager.decrementeID();
 	}
 
 	public void sendCommand(Command command, Object... data) {
@@ -209,13 +230,13 @@ public class SocketClient {
 					throw new RuntimeException(
 							"1st object for SEND_DATA is not of type String!");
 				byte[] array;
-				if (data[1] instanceof ByteArrayOutputStream) {
-					array = ((ByteArrayOutputStream) data[1]).toByteArray();
+				if (data[1] instanceof ByteArrayDataOutput) {
+					array = ((ByteArrayDataOutput) data[1]).toByteArray();
 				} else if (data[1] instanceof byte[]) {
 					array = (byte[]) data[1];
 				} else {
 					throw new RuntimeException(
-							"2st object for SEND_DATA is neither type of ByteArrayOutputStream nor byte array!");
+							"2st object for SEND_DATA is neither type of ByteArrayDataOutput nor byte array!");
 				}
 
 				String channel = ((String) data[0]);
